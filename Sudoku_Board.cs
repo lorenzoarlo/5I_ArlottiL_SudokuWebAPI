@@ -120,7 +120,7 @@
         return region;
     }
 
-    public Sudoku_Cell GetEmptyCell()
+    public Sudoku_Cell GetFirstEmptyCell()
     {
         foreach (Sudoku_Cell cell in this.Board)
         {
@@ -235,7 +235,7 @@
     {
         if (this.IsCompleted) return true;
 
-        Sudoku_Cell next = this.GetEmptyCell();
+        Sudoku_Cell next = this.GetFirstEmptyCell();
 
         List<Sudoku_ValueAction> guesses = next.GetPossibleActions();
 

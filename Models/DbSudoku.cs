@@ -1,6 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 
-public class DbSudoku : DbContext
+class DbSudoku : DbContext
 {
     public DbSet<Sudoku_DTO> Sudoku_Records { get; set; }
 

@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
-public class Sudoku_DTO
+class Sudoku_DTO
 {
     public enum Sudoku_Difficulty
     {

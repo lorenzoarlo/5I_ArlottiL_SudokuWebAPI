@@ -4,6 +4,19 @@
 
     public bool[] Candidates { get; set; } = new bool[Sudoku_Board.DIMENSION] { true, true, true, true, true, true, true, true, true };
 
+    public string CandidatesString
+    {
+        get
+        {
+            string s = "";
+            for (int i = 0; i < Sudoku_Board.DIMENSION; i++)
+            {
+                if (this.Candidates[i]) s += $"{i + 1}";
+            }
+            return s;
+        }
+    }
+
     public int Row { get; }
 
     public int Column { get; }
