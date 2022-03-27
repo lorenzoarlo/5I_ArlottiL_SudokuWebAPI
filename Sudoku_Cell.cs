@@ -21,6 +21,8 @@
 
     public int Column { get; }
 
+    public int Region { get { return Sudoku_Board.GetRegionIndex(this.Row, this.Column); } }
+
     // ----- CONSTRUCTOR -----
     public Sudoku_Cell(int row, int column, int value = 0)
     {
@@ -43,19 +45,9 @@
 
         this.SetAllCandidates(true);
 
-        Sudoku_Cell[] myRow = board.GetRow(this.Row);
-
-        Sudoku_Cell[] myColumn = board.GetColumn(this.Column);
-
-        Sudoku_Cell[] myRegion = board.GetRegion(Sudoku_Board.GetRegionIndex(this.Row, this.Column));
-
-        for (int i = 0; i < Sudoku_Board.DIMENSION; i++)
+        foreach (Sudoku_Cell neighbour in board.GetNeighbours(this.Row, this.Column))
         {
-            if (myRow[i].Value != 0) this.Candidates[myRow[i].Value - 1] = false;
-
-            if (myColumn[i].Value != 0) this.Candidates[myColumn[i].Value - 1] = false;
-
-            if (myRegion[i].Value != 0) this.Candidates[myRegion[i].Value - 1] = false;
+            if (neighbour.Value != 0) this.Candidates[neighbour.Value - 1] = false;
         }
     }
 

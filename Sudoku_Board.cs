@@ -23,9 +23,10 @@
     {
         get
         {
+            List<Sudoku_Action> actions = Sudoku_Techniques.Recursion_Technique(this);
             Sudoku_Board clone = new Sudoku_Board(this.Mission);
-            bool resolved = clone.Resolve_Recursively();
-            return (resolved) ? clone.ToString() : null;
+            clone.ApplyActions(actions);
+            return (clone.IsCompleted) ? clone.ToString() : null;
         }
     }
 
@@ -155,6 +156,30 @@
 
     }
 
+    public List<Sudoku_Cell> GetNeighbours(int row, int column)
+    {
+        List<Sudoku_Cell> neighbours = new List<Sudoku_Cell>();
+
+        Sudoku_Cell[] myRow = this.GetRow(row);
+
+        Sudoku_Cell[] myColumn = this.GetColumn(column);
+
+        Sudoku_Cell[] myRegion = this.GetRegion(Sudoku_Board.GetRegionIndex(row, column));
+
+
+        for (int i = 0; i < DIMENSION; i++)
+        {
+            if (i != column) neighbours.Add(myRow[i]);
+
+            if (i != row) neighbours.Add(myColumn[i]);
+
+            if (myRegion[i].Row != row && myRegion[i].Column != column) neighbours.Add(myRegion[i]);
+        }
+
+
+        return neighbours;
+    }
+
     public List<Sudoku_Action> GetAllPossibleActions()
     {
         List<Sudoku_Action> possibleActions = new List<Sudoku_Action>();
@@ -174,33 +199,32 @@
     {
         this.Board[action.Row, action.Column].Value = action.Value;
 
-        Sudoku_Cell[] myRow = this.GetRow(action.Row);
-
-        Sudoku_Cell[] myColumn = this.GetColumn(action.Column);
-
-        Sudoku_Cell[] myRegion = this.GetRegion(Sudoku_Board.GetRegionIndex(action.Row, action.Column));
-
-        for (int i = 0; i < Sudoku_Board.DIMENSION; i++)
+        foreach (Sudoku_Cell cell in this.GetNeighbours(action.Row, action.Column))
         {
-            if (myRow[i].Value == 0 && myRow[i].Candidates[action.Value - 1])
+            if (cell.Value == 0 && cell.Candidates[action.Value - 1])
             {
-                myRow[i].Candidates[action.Value - 1] = false;
-                action.CandidatesModifed.Push(new Sudoku_CandidateAction(myRow[i].Row, myRow[i].Column, action.Value - 1, false));
-            }
-
-            if (myColumn[i].Value == 0 && myColumn[i].Candidates[action.Value - 1])
-            {
-                myColumn[i].Candidates[action.Value - 1] = false;
-                action.CandidatesModifed.Push(new Sudoku_CandidateAction(myColumn[i].Row, myColumn[i].Column, action.Value - 1, false));
-            }
-
-            if (myRegion[i].Value == 0 && myRegion[i].Candidates[action.Value - 1])
-            {
-                myRegion[i].Candidates[action.Value - 1] = false;
-                action.CandidatesModifed.Push(new Sudoku_CandidateAction(myRegion[i].Row, myRegion[i].Column, action.Value - 1, false));
+                cell.Candidates[action.Value - 1] = false;
+                action.CandidatesModifed.Push(new Sudoku_CandidateAction(cell.Row, cell.Column, action.Value - 1, false));
             }
         }
+    }
 
+    public void ApplyActions(List<Sudoku_Action> actions)
+    {
+        foreach (Sudoku_Action action in actions)
+        {
+            if (action is Sudoku_ValueAction) this.ApplyAction(action as Sudoku_ValueAction);
+            else this.ApplyAction(action as Sudoku_CandidateAction);
+        }
+    }
+
+    public void DeApplyActions(List<Sudoku_Action> actions)
+    {
+        foreach (Sudoku_Action action in actions)
+        {
+            if (action is Sudoku_ValueAction) this.DeApplyAction(action as Sudoku_ValueAction);
+            else this.DeApplyAction(action as Sudoku_CandidateAction);
+        }
     }
 
     public void ApplyAction(Sudoku_CandidateAction action)
@@ -229,28 +253,6 @@
     public Sudoku_DTO GetDTO()
     {
         return new Sudoku_DTO(this.Mission, this.Solution, this.RateDifficulty());
-    }
-
-    public bool Resolve_Recursively()
-    {
-        if (this.IsCompleted) return true;
-
-        Sudoku_Cell next = this.GetFirstEmptyCell();
-
-        List<Sudoku_ValueAction> guesses = next.GetPossibleActions();
-
-        foreach (Sudoku_ValueAction guess in guesses)
-        {
-            if (this.IsCorrect)
-            {
-                this.ApplyAction(guess);
-
-                if (this.Resolve_Recursively()) return true;
-
-            }
-            this.DeApplyAction(guess);
-        }
-        return false;
     }
 
     public override string ToString()

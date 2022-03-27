@@ -5,7 +5,7 @@ namespace _5I_ArlottiL_SudokuWebAPI.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-class SudokuController : ControllerBase
+public class SudokuController : ControllerBase
 {
     private readonly DbSudoku _context;
 
@@ -15,7 +15,7 @@ class SudokuController : ControllerBase
     }
 
     [HttpGet("{difficulty}")]
-    public async Task<ActionResult<Sudoku_DTO>> GetArticolo(string difficulty)
+    public async Task<ActionResult<Sudoku_DTO>> GetSudoku(string difficulty)
     {
         bool correct = Enum.TryParse(difficulty, true, out Sudoku_DTO.Sudoku_Difficulty difficultySelected);
         if (!correct) return BadRequest("Difficoltà non riconosciuta!");

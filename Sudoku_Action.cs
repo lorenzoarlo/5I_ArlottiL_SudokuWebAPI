@@ -1,5 +1,7 @@
-﻿abstract class Sudoku_Action
+﻿using System.Text.Json.Nodes;
+abstract class Sudoku_Action
 {
+    abstract public string ActionType { get; }
     public int Row { get; }
     public int Column { get; }
 
@@ -8,5 +10,7 @@
         this.Row = row;
         this.Column = column;
     }
+
+    public abstract JsonObject GetDTO();
 
 }
