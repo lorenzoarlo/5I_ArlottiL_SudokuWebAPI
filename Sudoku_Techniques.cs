@@ -4,16 +4,16 @@ abstract class Sudoku_Techniques
     /*
      * Single Candidate = Ok
      * Single Position  = Ok 
-     * Candidate Lines  = 
-     * Double Pairs     = 
-     * Multiple Lines   = 
-     * Naked Pair       = 
+     * Candidate Lines  = Ok
+     * Double Pairs     = X
+     * Multiple Lines   = X
+     * Naked Pair       = Ok
      * Hidden Pair      = 
-     * Naked Triple     = 
-     * Hiddent Triple   = 
+     * Naked Triple     = Ok
+     * Hidden Triple   = 
      * X-Wing           = 
      * Forcing Chains   = 
-     * Naked Quad       = 
+     * Naked Quad       = Ok
      * Hidden Quad      = 
      * Swordfish        = 
      * Nishio           = X
@@ -67,9 +67,12 @@ abstract class Sudoku_Techniques
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
         int[] occurrencesCandidates = new int[Sudoku_Board.DIMENSION] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
         int[] latestIndex = new int[Sudoku_Board.DIMENSION] { -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-        foreach (Sudoku_Cell cell in line)
+        
+        IEnumerable<Sudoku_Cell> emptyCells = line.Where(cell =>  cell.Value == 0);
+
+        
+        foreach (Sudoku_Cell cell in emptyCells)
         {
-            if (cell.Value != 0) continue;
             for (int i = 0; i < Sudoku_Board.DIMENSION; i++)
             {
                 if (cell.Candidates[i])
@@ -92,8 +95,8 @@ abstract class Sudoku_Techniques
     }
 
     /*
-     * Single Position:
-     * Se in una riga (o colonna, o regione), solo una cella presenta un certo candidato, il valore della cella sarà per forza quel candidato
+     * Candidate lines:
+     * Se in una regione le uniche celle che presentano un certo candidato si trovano sulla stessa riga (o colonna), si può rimuovere quel candidato da tutto il resto della lnea
      */
     public static List<Sudoku_Action> CandidateLines_Technique(Sudoku_Board board)
     {
@@ -101,8 +104,8 @@ abstract class Sudoku_Techniques
 
         for (int regionIndex = 0; regionIndex < Sudoku_Board.DIMENSION; regionIndex++)
         {
-            Sudoku_Cell[] emptyCells = board.GetRegion(regionIndex).Where(cell => cell.Value != 0).ToArray();
-            if (emptyCells.Length == 0) continue;
+            IEnumerable<Sudoku_Cell> emptyCells = board.GetRegion(regionIndex).Where(cell => cell.Value != 0);
+            if (!emptyCells.Any()) continue;
 
             bool[] tryCandidates = new bool[Sudoku_Board.DIMENSION] { false, false, false, false, false, false, false, false, false };
 
@@ -111,32 +114,18 @@ abstract class Sudoku_Techniques
             for (int candidateIndex = 0; candidateIndex < Sudoku_Board.DIMENSION; candidateIndex++)
             {
                 if (!tryCandidates[candidateIndex]) continue;
-                Sudoku_Cell[] cellsWithCandidate = emptyCells.Where(cell => cell.Candidates[candidateIndex]).ToArray();
-                bool sameRow = true;
-                bool sameColumn = true;
+                
+                IEnumerable<Sudoku_Cell> cellsWithCandidate = emptyCells.Where(cell => cell.Candidates[candidateIndex]);
                 Sudoku_Cell first = cellsWithCandidate.First();
-                foreach (Sudoku_Cell cell in cellsWithCandidate)
-                {
-                    sameRow = sameRow && (cell.Row == first.Row);
-                    sameColumn = sameColumn && (cell.Column == first.Column);
-                }
+                bool sameRow = cellsWithCandidate.All(cell => first.Row == cell.Row);
+                bool sameColumn = cellsWithCandidate.All(cell => first.Column == cell.Column);
 
-                if (sameRow)
-                {
-                    Sudoku_Cell[] othersInRow = board.GetRow(first.Row).Where(cell => cell.Region != first.Region).ToArray();
-                    foreach (Sudoku_Cell other in othersInRow) if (other.Candidates[candidateIndex]) actions.Add(new Sudoku_CandidateAction(other.Row, other.Column, candidateIndex, false));
-                }
-                else if (sameColumn)
-                {
-                    Sudoku_Cell[] othersInColumn = board.GetColumn(first.Column).Where(cell => cell.Region != first.Region).ToArray();
-                    foreach (Sudoku_Cell other in othersInColumn) if (other.Candidates[candidateIndex]) actions.Add(new Sudoku_CandidateAction(other.Row, other.Column, candidateIndex, false));
-                }
+                if(sameRow) actions.AddRange(board.GetRow(first.Row).Where(cell => cell.Region != first.Region && cell.Candidates[candidateIndex]).Select(cell => new Sudoku_CandidateAction(cell.Row, cell.Column, candidateIndex, false)));
+
+                if(sameColumn) actions.AddRange(board.GetColumn(first.Row).Where(cell => cell.Region != first.Region && cell.Candidates[candidateIndex]).Select(cell => new Sudoku_CandidateAction(cell.Row, cell.Column, candidateIndex, false)));
 
             }
         }
-
-
-
         return actions;
     }
 
@@ -147,6 +136,57 @@ abstract class Sudoku_Techniques
 
         for (int i = 0; i < Sudoku_Board.DIMENSION; i++) orArray[i] = first[i] | second[i];
         return orArray;
+    }
+
+
+
+    /*
+     * Naked_Technique:
+     * Se in una linea (regione, riga o colonna) sono presenti N celle con N candidati uguali, è possibile rimuovere tali candidati dalle altre celle della linea.
+     */
+    public static List<Sudoku_Action> Naked_Technique(Sudoku_Board board, int nakedGoal) 
+    {
+        List<Sudoku_Action> actions = new List<Sudoku_Action>();
+        
+        for(int i = 0; i < Sudoku_Board.DIMENSION; i++) 
+        {
+            actions.AddRange(Naked_Scan(board.GetColumn(i), nakedGoal));
+            actions.AddRange(Naked_Scan(board.GetRow(i), nakedGoal));
+            actions.AddRange(Naked_Scan(board.GetRegion(i), nakedGoal));
+        }
+        
+        
+        return actions;
+    }
+ 
+    private static List<Sudoku_Action> Naked_Scan(Sudoku_Cell[] line, int goal) 
+    {
+        List<Sudoku_Action> actions = new List<Sudoku_Action>();
+
+        IEnumerable<Sudoku_Cell> possibleCells = line.Where(cell => cell.Value == 0 && cell.CandidatesString.Length == goal);
+        if(!possibleCells.Any()) return actions;
+
+        IEnumerable<Sudoku_Cell> distincts = possibleCells.DistinctBy(cell => cell.CandidatesString);
+
+        foreach(Sudoku_Cell distinct in distincts) {
+            string distinctCandidateString = distinct.CandidatesString;
+            int nEquals = possibleCells.Count(cell => cell.CandidatesString == distinctCandidateString);
+            if(nEquals == goal) 
+            {
+                IEnumerable<int> indexesToRemove = distinctCandidateString.Select(c => int.Parse(c.ToString()) - 1);
+                IEnumerable<Sudoku_Cell> others = possibleCells.Where(cell => cell.CandidatesString != distinct.CandidatesString);
+                foreach(Sudoku_Cell other in others) 
+                {
+                    foreach(int candidateIndex in indexesToRemove) 
+                    {
+                        actions.Add(new Sudoku_CandidateAction(other.Row, other.Column, candidateIndex, false));
+                    }
+                }
+                
+            }
+        }
+
+        return actions;
     }
 
     /*

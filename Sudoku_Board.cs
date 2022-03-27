@@ -8,7 +8,7 @@
 
     // ----- PROPERTIES -----
 
-    public Sudoku_Cell[,] Board = new Sudoku_Cell[DIMENSION, DIMENSION];
+    public Sudoku_Cell[,] Board { get; }
     public bool IsCompleted
     {
         get
@@ -75,7 +75,27 @@
     public Sudoku_Board(string mission)
     {
         this.Mission = mission;
-        this.Initialize();
+        this.Board = new Sudoku_Cell[DIMENSION, DIMENSION];
+
+        for (int row = 0; row < DIMENSION; row++)
+        {
+            for (int column = 0; column < DIMENSION; column++)
+            {
+                int index = row * DIMENSION + column;
+                int cellValue = int.Parse($"{this.Mission[index]}");
+                this.Board[row, column] = new Sudoku_Cell(row, column, cellValue);
+            }
+        }
+
+        for (int row = 0; row < DIMENSION; row++)
+        {
+            for (int column = 0; column < DIMENSION; column++)
+            {
+                this.Board[row, column].AcquireCandidates(this);
+            }
+        }
+
+
     }
 
 
@@ -128,32 +148,6 @@
             if (cell.Value == 0) return cell;
         }
         return null;
-    }
-
-
-    private void Initialize()
-    {
-        this.Board = new Sudoku_Cell[DIMENSION, DIMENSION];
-        for (int row = 0; row < DIMENSION; row++)
-        {
-            for (int column = 0; column < DIMENSION; column++)
-            {
-                int index = row * DIMENSION + column;
-                int cellValue = int.Parse($"{this.Mission[index]}");
-
-                this.Board[row, column] = new Sudoku_Cell(row, column, cellValue);
-            }
-        }
-
-        for (int row = 0; row < DIMENSION; row++)
-        {
-            for (int column = 0; column < DIMENSION; column++)
-            {
-                this.Board[row, column].AcquireCandidates(this);
-            }
-        }
-
-
     }
 
     public List<Sudoku_Cell> GetNeighbours(int row, int column)
