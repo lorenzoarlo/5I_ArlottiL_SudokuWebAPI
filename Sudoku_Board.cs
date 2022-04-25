@@ -1,7 +1,6 @@
 ﻿class Sudoku_Board
 {
     // ----- CONSTANTS -----
-
     public const int DIMENSION = 9;
 
     public const int REGION_DIMENSION = 3;
@@ -70,6 +69,20 @@
         }
     }
 
+    public IEnumerable<Sudoku_Cell> EmptyCells {
+        get {
+            List<Sudoku_Cell> cells = new List<Sudoku_Cell>();
+            for (int row = 0; row < Sudoku_Board.DIMENSION; row++)
+            {
+                for (int column = 0; column < Sudoku_Board.DIMENSION; column++)
+                {
+                    if (this.Board[row, column].Value == 0) cells.Add(this.Board[row, column]);
+                }
+            }
+            return cells;
+        }
+    }
+
     // ----- CONSTRUCTORS -----
 
     public Sudoku_Board(string mission)
@@ -95,9 +108,7 @@
             }
         }
 
-
     }
-
 
     // ----- STATIC FUNCTIONS -----
 
@@ -143,12 +154,16 @@
 
     public Sudoku_Cell GetFirstEmptyCell()
     {
-        foreach (Sudoku_Cell cell in this.Board)
+        for (int row = 0; row < Sudoku_Board.DIMENSION; row++)
         {
-            if (cell.Value == 0) return cell;
+            for (int column = 0; column < Sudoku_Board.DIMENSION; column++)
+            {
+                if (this.Board[row, column].Value == 0) return this.Board[row, column];
+            }
         }
         return null;
     }
+
 
     public List<Sudoku_Cell> GetNeighbours(int row, int column)
     {

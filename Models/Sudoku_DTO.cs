@@ -3,6 +3,7 @@ public class Sudoku_DTO
 {
     public enum Sudoku_Difficulty
     {
+        Casual = -1,
         Easy = 0,
         Medium = 1,
         Hard = 2,

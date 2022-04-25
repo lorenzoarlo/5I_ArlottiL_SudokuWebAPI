@@ -1,4 +1,4 @@
-GET HTTP://localhost:5156/api/Sudoku/easy HTTP/1.1
+GET HTTPs://localhost:7115/api/Sudoku/casual HTTP/1.1
 
 ###
 

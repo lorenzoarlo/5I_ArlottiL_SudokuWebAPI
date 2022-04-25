@@ -1,103 +1,84 @@
 abstract class Sudoku_Techniques
 {
     //https://www.sudokuoftheday.com/techniques
+    //https://www.sudoku9981.com/sudoku-solving/single.php
     /*
-     * Single Candidate = Ok
-     * Single Position  = Ok 
+     * -> Subset = Riga, Colonna o Regione
+     *
+     * Single Candidate = Ok 
+     * Se una cella ha un solo candidato possibile, il valore della cella sarà quel candidato
+     * Single Position  = Ok
+     * Se in un subset, un candidato è presente in una sola cella, il valore della cella sarà quel candidato
      * Candidate Lines  = Ok
+     * Se in una regione le uniche celle che presentano un certo candidato si trovano sulla stessa riga (o colonna), si può rimuovere quel candidato da tutto il resto della linea
      * Double Pairs     = X
+     * -
      * Multiple Lines   = X
-     * Naked Pair       = Ok
-     * Hidden Pair      = 
-     * Naked Triple     = Ok
-     * Hidden Triple   = 
+     * -
+     * Naked Technique  = Ok (Naked Pair, Triple, Quad)
+     * Se in un subset sono presenti N celle con N candidati uguali, è possibile rimuovere tali candidati dalle altre celle della linea
+     * Hidden Technique =  (Hidden Pair, Triple, Quad) 
+     * 
      * X-Wing           = 
-     * Forcing Chains   = 
-     * Naked Quad       = Ok
-     * Hidden Quad      = 
+     * Forcing Chains   =  
      * Swordfish        = 
      * Nishio           = X
      * Guessing         = X
      * Recursion        = Ok
      */
 
-
-
-    /*
-     * Single Candidate:
-     * Se una cella ha un solo candidato possibile, il valore della cella sarà per forza quel candidato
-     */
     public static List<Sudoku_Action> SingleCandidate_Technique(Sudoku_Board board)
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
-        for (int i = 0; i < Sudoku_Board.DIMENSION; i++)
-        {
-            foreach (Sudoku_Cell cell in board.GetRow(i))
-            {
-                if (cell.Value != 0) continue;
+        
+        IEnumerable<Sudoku_Cell> singleCandidateCells = board.EmptyCells.Where(cell => cell.CandidatesString.Length == 1);
 
-                string candidateString = cell.CandidatesString;
-                if (candidateString.Length == 1) actions.Add(new Sudoku_ValueAction(cell.Row, cell.Column, int.Parse(candidateString)));
-            }
-        }
+        foreach(Sudoku_Cell cell in singleCandidateCells) actions.Add(new Sudoku_ValueAction(cell.Row, cell.Column, int.Parse(cell.CandidatesString)));
+        
         return actions;
     }
 
-    /*
-     * Single Position:
-     * Se in una riga (o colonna, o regione), solo una cella presenta un certo candidato, il valore della cella sarà per forza quel candidato
-     */
-    public static List<Sudoku_Action> SinglePosition_Technique(Sudoku_Board board)
+    public static IEnumerable<Sudoku_CandidateAction> GetAllCandidatesActions(Sudoku_Board board)   
+    {
+        List<Sudoku_CandidateAction> actions = new List<Sudoku_CandidateAction>();
+        
+        foreach(Sudoku_Cell cell in board.EmptyCells) actions.AddRange(cell.Candidates.Select((value, index) => new Sudoku_CandidateAction(cell.Row, cell.Column, ((byte)index), value)));
+
+        return actions;
+    } 
+
+    public static IEnumerable<Sudoku_Action> SinglePosition_Technique(Sudoku_Board board)
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
 
         for (int i = 0; i < Sudoku_Board.DIMENSION; i++)
         {
-            actions.AddRange(SinglePosition_Scan(board.GetRow(i)));
-            actions.AddRange(SinglePosition_Scan(board.GetColumn(i)));
-            actions.AddRange(SinglePosition_Scan(board.GetRegion(i)));
+            actions.AddRange(SinglePosition_Algorithm(board.GetRow(i)));
+            actions.AddRange(SinglePosition_Algorithm(board.GetColumn(i)));
+            actions.AddRange(SinglePosition_Algorithm(board.GetRegion(i)));
         }
 
 
         return actions;
     }
 
-    private static List<Sudoku_Action> SinglePosition_Scan(Sudoku_Cell[] line)
+    private static List<Sudoku_Action> SinglePosition_Algorithm(IEnumerable<Sudoku_Cell> line)
     {
-        List<Sudoku_Action> actions = new List<Sudoku_Action>();
-        int[] occurrencesCandidates = new int[Sudoku_Board.DIMENSION] { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
-        int[] latestIndex = new int[Sudoku_Board.DIMENSION] { -1, -1, -1, -1, -1, -1, -1, -1, -1 };
-        
-        IEnumerable<Sudoku_Cell> emptyCells = line.Where(cell =>  cell.Value == 0);
+        List<Sudoku_Action> actions = new List<Sudoku_Action>();        
+        IEnumerable<Sudoku_Cell> emptyCells = line.Where(cell => cell.Value == 0);        
 
-        
-        foreach (Sudoku_Cell cell in emptyCells)
+        for(int candidateIndex = 0; candidateIndex < Sudoku_Board.DIMENSION; candidateIndex++) 
         {
-            for (int i = 0; i < Sudoku_Board.DIMENSION; i++)
-            {
-                if (cell.Candidates[i])
-                {
-                    occurrencesCandidates[i]++;
-                    latestIndex[i] = i;
-                }
+            IEnumerable<Sudoku_Cell> cellsWithCandidate = emptyCells.Where(cell => cell.Candidates[candidateIndex]);
+            if(cellsWithCandidate.Count() == 1) {
+                Sudoku_Cell tmp = cellsWithCandidate.First();
+                actions.Add(new Sudoku_ValueAction(tmp.Row, tmp.Column, candidateIndex + 1));
             }
         }
 
-        for (int i = 0; i < Sudoku_Board.DIMENSION; i++)
-        {
-            if (occurrencesCandidates[i] == 1)
-            {
-                Sudoku_Cell tmp = line[latestIndex[i]];
-                actions.Add(new Sudoku_ValueAction(tmp.Row, tmp.Column, i + 1));
-            }
-        }
         return actions;
     }
 
-    /*
-     * Candidate lines:
-     * Se in una regione le uniche celle che presentano un certo candidato si trovano sulla stessa riga (o colonna), si può rimuovere quel candidato da tutto il resto della lnea
-     */
     public static List<Sudoku_Action> CandidateLines_Technique(Sudoku_Board board)
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
@@ -138,12 +119,6 @@ abstract class Sudoku_Techniques
         return orArray;
     }
 
-
-
-    /*
-     * Naked_Technique:
-     * Se in una linea (regione, riga o colonna) sono presenti N celle con N candidati uguali, è possibile rimuovere tali candidati dalle altre celle della linea.
-     */
     public static List<Sudoku_Action> Naked_Technique(Sudoku_Board board, int nakedGoal) 
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
