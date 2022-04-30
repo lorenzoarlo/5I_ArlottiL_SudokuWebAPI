@@ -1,5 +1,4 @@
-﻿using System.Text.Json.Nodes;
-class Sudoku_ValueAction : Sudoku_Action
+﻿public class Sudoku_ValueAction : Sudoku_Action
 {
     public int Value { get; }
 
@@ -9,5 +8,14 @@ class Sudoku_ValueAction : Sudoku_Action
     {
         this.Value = value;
     }
+
+    public override Sudoku_ActionDTO GetDTO() => new Sudoku_ActionDTO {
+        ActionType = "Sudoku_ValueAction",
+        Row = this.Row,
+        Column = this.Column,
+        Value = this.Value,
+        CandidateIndex = null,
+        CandidateValue = null
+    };
 
 }

@@ -1,21 +1,30 @@
-﻿class Sudoku_Cell
+﻿public class Sudoku_Cell
 {
     public int Value { get; set; } = 0;
 
-    public bool[] Candidates { get; set; } = new bool[Sudoku_Board.DIMENSION] { true, true, true, true, true, true, true, true, true };
+    public bool[] Candidates { get; set; } = new bool[Sudoku_Board.BOARD_DIMENSION] { true, true, true, true, true, true, true, true, true };
 
     public string CandidatesString
     {
         get
         {
             string s = "";
-            for (int i = 0; i < Sudoku_Board.DIMENSION; i++)
+            for (int i = 0; i < Sudoku_Board.BOARD_DIMENSION; i++)
             {
                 if (this.Candidates[i]) s += $"{i + 1}";
             }
             return s;
         }
     }
+
+    public string AllCandidatesString { 
+            get 
+            {
+                string toReturn = "";
+                foreach (bool candidate in this.Candidates) toReturn += (candidate) ? '1' : '0'; 
+                return toReturn;
+            } 
+        }
 
     public int Row { get; }
 
@@ -53,7 +62,7 @@
 
     public void SetAllCandidates(bool value)
     {
-        for (int i = 0; i < Sudoku_Board.DIMENSION; i++) this.Candidates[i] = value;
+        for (int i = 0; i < Sudoku_Board.BOARD_DIMENSION; i++) this.Candidates[i] = value;
     }
 
     public List<Sudoku_ValueAction> GetPossibleActions()
@@ -61,7 +70,7 @@
         List<Sudoku_ValueAction> possibleActions = new List<Sudoku_ValueAction>();
         if (this.Value != 0) return possibleActions;
 
-        for (int i = 0; i < Sudoku_Board.DIMENSION; i++)
+        for (int i = 0; i < Sudoku_Board.BOARD_DIMENSION; i++)
         {
             if (this.Candidates[i]) possibleActions.Add(new Sudoku_ValueAction(this.Row, this.Column, i + 1));
         }

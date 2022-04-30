@@ -1,4 +1,4 @@
-abstract class Sudoku_Techniques
+public abstract class Sudoku_Techniques
 {
     //https://www.sudokuoftheday.com/techniques
     //https://www.sudoku9981.com/sudoku-solving/single.php
@@ -51,7 +51,7 @@ abstract class Sudoku_Techniques
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
 
-        for (int i = 0; i < Sudoku_Board.DIMENSION; i++)
+        for (int i = 0; i < Sudoku_Board.BOARD_DIMENSION; i++)
         {
             actions.AddRange(SinglePosition_Algorithm(board.GetRow(i)));
             actions.AddRange(SinglePosition_Algorithm(board.GetColumn(i)));
@@ -67,7 +67,7 @@ abstract class Sudoku_Techniques
         List<Sudoku_Action> actions = new List<Sudoku_Action>();        
         IEnumerable<Sudoku_Cell> emptyCells = line.Where(cell => cell.Value == 0);        
 
-        for(int candidateIndex = 0; candidateIndex < Sudoku_Board.DIMENSION; candidateIndex++) 
+        for(int candidateIndex = 0; candidateIndex < Sudoku_Board.BOARD_DIMENSION; candidateIndex++) 
         {
             IEnumerable<Sudoku_Cell> cellsWithCandidate = emptyCells.Where(cell => cell.Candidates[candidateIndex]);
             if(cellsWithCandidate.Count() == 1) {
@@ -83,16 +83,16 @@ abstract class Sudoku_Techniques
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
 
-        for (int regionIndex = 0; regionIndex < Sudoku_Board.DIMENSION; regionIndex++)
+        for (int regionIndex = 0; regionIndex < Sudoku_Board.BOARD_DIMENSION; regionIndex++)
         {
             IEnumerable<Sudoku_Cell> emptyCells = board.GetRegion(regionIndex).Where(cell => cell.Value != 0);
             if (!emptyCells.Any()) continue;
 
-            bool[] tryCandidates = new bool[Sudoku_Board.DIMENSION] { false, false, false, false, false, false, false, false, false };
+            bool[] tryCandidates = new bool[Sudoku_Board.BOARD_DIMENSION] { false, false, false, false, false, false, false, false, false };
 
             foreach (Sudoku_Cell cell in emptyCells) tryCandidates = ORArrayBoolean(tryCandidates, cell.Candidates);
 
-            for (int candidateIndex = 0; candidateIndex < Sudoku_Board.DIMENSION; candidateIndex++)
+            for (int candidateIndex = 0; candidateIndex < Sudoku_Board.BOARD_DIMENSION; candidateIndex++)
             {
                 if (!tryCandidates[candidateIndex]) continue;
                 
@@ -115,7 +115,7 @@ abstract class Sudoku_Techniques
         if (first.Length != second.Length) throw new Exception("Array di dimensione differente");
         bool[] orArray = new bool[first.Length];
 
-        for (int i = 0; i < Sudoku_Board.DIMENSION; i++) orArray[i] = first[i] | second[i];
+        for (int i = 0; i < Sudoku_Board.BOARD_DIMENSION; i++) orArray[i] = first[i] | second[i];
         return orArray;
     }
 
@@ -123,7 +123,7 @@ abstract class Sudoku_Techniques
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
         
-        for(int i = 0; i < Sudoku_Board.DIMENSION; i++) 
+        for(int i = 0; i < Sudoku_Board.BOARD_DIMENSION; i++) 
         {
             actions.AddRange(Naked_Scan(board.GetColumn(i), nakedGoal));
             actions.AddRange(Naked_Scan(board.GetRow(i), nakedGoal));

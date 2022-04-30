@@ -4,8 +4,8 @@ using Microsoft.AspNetCore.Cors;
 
 namespace _5I_ArlottiL_SudokuWebAPI.Controllers;
 
-[EnableCors("MyPolicy")]
 [ApiController]
+[EnableCors("MyPolicy")]
 [Route("api/[controller]")]
 public class SudokuController : ControllerBase
 {
@@ -15,7 +15,6 @@ public class SudokuController : ControllerBase
     {
         _context = context;
     }
-
     
     [HttpGet("{difficulty}")]
     public async Task<ActionResult<Sudoku_DTO>> GetSudoku(string difficulty)
@@ -30,7 +29,7 @@ public class SudokuController : ControllerBase
         }
         List<Sudoku_DTO> records = await _context.Sudoku_Records.Where(x => x.Difficulty == difficultySelected).ToListAsync<Sudoku_DTO>();
 
-        if (records.Count() == 0) return NotFound();
+        if (!records.Any()) return NotFound();
 
         return records.OrderBy(o => Guid.NewGuid()).First(); ;
     }

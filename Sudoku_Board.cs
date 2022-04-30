@@ -1,20 +1,14 @@
-﻿class Sudoku_Board
+﻿public class Sudoku_Board
 {
     // ----- CONSTANTS -----
-    public const int DIMENSION = 9;
+    public const int BOARD_DIMENSION = 9;
 
     public const int REGION_DIMENSION = 3;
 
     // ----- PROPERTIES -----
 
     public Sudoku_Cell[,] Board { get; }
-    public bool IsCompleted
-    {
-        get
-        {
-            return this.GetAllPossibleActions().Count() == 0;
-        }
-    }
+    public bool IsCompleted => !this.GetAllPossibleActions().Any();
 
     public string Mission { get; }
 
@@ -33,10 +27,10 @@
     {
         get
         {
-            for (int i = 0; i < DIMENSION; i++)
+            for (int i = 0; i < BOARD_DIMENSION; i++)
             {
                 //-> Rows
-                bool[] possibleValues = new bool[DIMENSION];
+                bool[] possibleValues = new bool[BOARD_DIMENSION];
                 foreach (Sudoku_Cell cell in this.GetRow(i))
                 {
                     if (cell.Value == 0) continue;
@@ -46,7 +40,7 @@
                 }
 
                 //-> Columns
-                possibleValues = new bool[DIMENSION];
+                possibleValues = new bool[BOARD_DIMENSION];
                 foreach (Sudoku_Cell cell in this.GetColumn(i))
                 {
                     if (cell.Value == 0) continue;
@@ -56,7 +50,7 @@
                 }
 
                 //-> Regions
-                possibleValues = new bool[DIMENSION];
+                possibleValues = new bool[BOARD_DIMENSION];
                 foreach (Sudoku_Cell cell in this.GetRegion(i))
                 {
                     if (cell.Value == 0) continue;
@@ -69,12 +63,14 @@
         }
     }
 
-    public IEnumerable<Sudoku_Cell> EmptyCells {
-        get {
+    public IEnumerable<Sudoku_Cell> EmptyCells
+    {
+        get
+        {
             List<Sudoku_Cell> cells = new List<Sudoku_Cell>();
-            for (int row = 0; row < Sudoku_Board.DIMENSION; row++)
+            for (int row = 0; row < Sudoku_Board.BOARD_DIMENSION; row++)
             {
-                for (int column = 0; column < Sudoku_Board.DIMENSION; column++)
+                for (int column = 0; column < Sudoku_Board.BOARD_DIMENSION; column++)
                 {
                     if (this.Board[row, column].Value == 0) cells.Add(this.Board[row, column]);
                 }
@@ -88,21 +84,21 @@
     public Sudoku_Board(string mission)
     {
         this.Mission = mission;
-        this.Board = new Sudoku_Cell[DIMENSION, DIMENSION];
+        this.Board = new Sudoku_Cell[BOARD_DIMENSION, BOARD_DIMENSION];
 
-        for (int row = 0; row < DIMENSION; row++)
+        for (int row = 0; row < BOARD_DIMENSION; row++)
         {
-            for (int column = 0; column < DIMENSION; column++)
+            for (int column = 0; column < BOARD_DIMENSION; column++)
             {
-                int index = row * DIMENSION + column;
+                int index = row * BOARD_DIMENSION + column;
                 int cellValue = int.Parse($"{this.Mission[index]}");
                 this.Board[row, column] = new Sudoku_Cell(row, column, cellValue);
             }
         }
 
-        for (int row = 0; row < DIMENSION; row++)
+        for (int row = 0; row < BOARD_DIMENSION; row++)
         {
-            for (int column = 0; column < DIMENSION; column++)
+            for (int column = 0; column < BOARD_DIMENSION; column++)
             {
                 this.Board[row, column].AcquireCandidates(this);
             }
@@ -118,8 +114,8 @@
 
     public Sudoku_Cell[] GetRow(int rowIndex)
     {
-        Sudoku_Cell[] row = new Sudoku_Cell[DIMENSION];
-        for (int column = 0; column < DIMENSION; column++)
+        Sudoku_Cell[] row = new Sudoku_Cell[BOARD_DIMENSION];
+        for (int column = 0; column < BOARD_DIMENSION; column++)
         {
             row[column] = this.Board[rowIndex, column];
         }
@@ -128,8 +124,8 @@
 
     public Sudoku_Cell[] GetColumn(int columnIndex)
     {
-        Sudoku_Cell[] column = new Sudoku_Cell[DIMENSION];
-        for (int row = 0; row < DIMENSION; row++)
+        Sudoku_Cell[] column = new Sudoku_Cell[BOARD_DIMENSION];
+        for (int row = 0; row < BOARD_DIMENSION; row++)
         {
             column[row] = this.Board[row, columnIndex];
         }
@@ -138,7 +134,7 @@
 
     public Sudoku_Cell[] GetRegion(int regionIndex)
     {
-        Sudoku_Cell[] region = new Sudoku_Cell[DIMENSION];
+        Sudoku_Cell[] region = new Sudoku_Cell[BOARD_DIMENSION];
         int initialRow = (regionIndex / REGION_DIMENSION) * REGION_DIMENSION;
         int initialColumn = (regionIndex % REGION_DIMENSION) * REGION_DIMENSION;
 
@@ -154,9 +150,9 @@
 
     public Sudoku_Cell GetFirstEmptyCell()
     {
-        for (int row = 0; row < Sudoku_Board.DIMENSION; row++)
+        for (int row = 0; row < Sudoku_Board.BOARD_DIMENSION; row++)
         {
-            for (int column = 0; column < Sudoku_Board.DIMENSION; column++)
+            for (int column = 0; column < Sudoku_Board.BOARD_DIMENSION; column++)
             {
                 if (this.Board[row, column].Value == 0) return this.Board[row, column];
             }
@@ -176,7 +172,7 @@
         Sudoku_Cell[] myRegion = this.GetRegion(Sudoku_Board.GetRegionIndex(row, column));
 
 
-        for (int i = 0; i < DIMENSION; i++)
+        for (int i = 0; i < BOARD_DIMENSION; i++)
         {
             if (i != column) neighbours.Add(myRow[i]);
 
@@ -192,9 +188,9 @@
     public List<Sudoku_Action> GetAllPossibleActions()
     {
         List<Sudoku_Action> possibleActions = new List<Sudoku_Action>();
-        for (int row = 0; row < DIMENSION; row++)
+        for (int row = 0; row < BOARD_DIMENSION; row++)
         {
-            for (int column = 0; column < DIMENSION; column++)
+            for (int column = 0; column < BOARD_DIMENSION; column++)
             {
                 if (this.Board[row, column].Value != 0) continue;
 
@@ -207,6 +203,7 @@
     public void ApplyAction(Sudoku_ValueAction action)
     {
         this.Board[action.Row, action.Column].Value = action.Value;
+        this.Board[action.Row, action.Column].SetAllCandidates(false);
 
         foreach (Sudoku_Cell cell in this.GetNeighbours(action.Row, action.Column))
         {
@@ -257,19 +254,34 @@
     // Da implementare
     public Sudoku_DTO.Sudoku_Difficulty RateDifficulty()
     {
-        return Sudoku_DTO.Sudoku_Difficulty.Easy;
+        return Sudoku_DTO.Sudoku_Difficulty.Casual;
     }
+
+
     public Sudoku_DTO GetDTO()
     {
         return new Sudoku_DTO(this.Mission, this.Solution, this.RateDifficulty());
     }
 
+    public string CandidatesString()
+        {
+            string toReturn = "";
+            for (int row = 0; row < BOARD_DIMENSION; row++)
+            {
+                for (int column = 0; column < BOARD_DIMENSION; column++)
+                {
+                    toReturn += this.Board[row, column].AllCandidatesString;
+                }
+            }
+            return toReturn;
+        }
+
     public override string ToString()
     {
         string toReturn = "";
-        for (int row = 0; row < DIMENSION; row++)
+        for (int row = 0; row < BOARD_DIMENSION; row++)
         {
-            for (int column = 0; column < DIMENSION; column++)
+            for (int column = 0; column < BOARD_DIMENSION; column++)
             {
                 toReturn += this.Board[row, column].Value;
             }
