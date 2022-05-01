@@ -19,15 +19,15 @@ public abstract class Sudoku_Techniques
      * Se in un subset sono presenti N celle con N candidati uguali, è possibile rimuovere tali candidati dalle altre celle della linea
      * Hidden Technique =  (Hidden Pair, Triple, Quad) 
      * 
-     * X-Wing           = 
-     * Forcing Chains   =  
-     * Swordfish        = 
+     * X-Wing           = X
+     * Forcing Chains   = X
+     * Swordfish        = X
      * Nishio           = X
      * Guessing         = X
      * Recursion        = Ok
      */
 
-    public static List<Sudoku_Action> SingleCandidate_Technique(Sudoku_Board board)
+    public static IEnumerable<Sudoku_Action> SingleCandidate_Technique(Sudoku_Board board)
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
         
@@ -62,7 +62,7 @@ public abstract class Sudoku_Techniques
         return actions;
     }
 
-    private static List<Sudoku_Action> SinglePosition_Algorithm(IEnumerable<Sudoku_Cell> line)
+    private static IEnumerable<Sudoku_Action> SinglePosition_Algorithm(IEnumerable<Sudoku_Cell> line)
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();        
         IEnumerable<Sudoku_Cell> emptyCells = line.Where(cell => cell.Value == 0);        
@@ -79,7 +79,7 @@ public abstract class Sudoku_Techniques
         return actions;
     }
 
-    public static List<Sudoku_Action> CandidateLines_Technique(Sudoku_Board board)
+    public static IEnumerable<Sudoku_Action> CandidateLines_Technique(Sudoku_Board board)
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
 
@@ -119,7 +119,13 @@ public abstract class Sudoku_Techniques
         return orArray;
     }
 
-    public static List<Sudoku_Action> Naked_Technique(Sudoku_Board board, int nakedGoal) 
+    public static IEnumerable<Sudoku_Action> NakedPair_Technique(Sudoku_Board board) => Sudoku_Techniques.Naked_Technique(board, 2);
+
+    public static IEnumerable<Sudoku_Action> NakedTriple_Technique(Sudoku_Board board) => Sudoku_Techniques.Naked_Technique(board, 3);
+
+    public static IEnumerable<Sudoku_Action> NakedQuad_Technique(Sudoku_Board board) => Sudoku_Techniques.Naked_Technique(board, 4);
+    
+    private static IEnumerable<Sudoku_Action> Naked_Technique(Sudoku_Board board, int nakedGoal) 
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
         
@@ -134,7 +140,7 @@ public abstract class Sudoku_Techniques
         return actions;
     }
  
-    private static List<Sudoku_Action> Naked_Scan(Sudoku_Cell[] line, int goal) 
+    private static IEnumerable<Sudoku_Action> Naked_Scan(Sudoku_Cell[] line, int goal) 
     {
         List<Sudoku_Action> actions = new List<Sudoku_Action>();
 
