@@ -14,9 +14,9 @@ public class SudokuHelperController : ControllerBase
         Sudoku_Techniques.SingleCandidate_Technique,
         Sudoku_Techniques.SinglePosition_Technique,
         Sudoku_Techniques.CandidateLines_Technique,
-        Sudoku_Techniques.NakedPair_Technique,
-        Sudoku_Techniques.NakedTriple_Technique,
-        Sudoku_Techniques.NakedQuad_Technique,
+        // Sudoku_Techniques.NakedPair_Technique,
+        // Sudoku_Techniques.NakedTriple_Technique,
+        // Sudoku_Techniques.NakedQuad_Technique,
         Sudoku_Techniques.Recursion_Technique
     };
 
